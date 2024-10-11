@@ -145,53 +145,69 @@
         });
 
         async function generateGif(images, duration) {
-    const workerScript = await loadWorkerScript();
-    const gif = new GIF({
-        workers: 2,
-        workerScript,
-        quality: 10
-    });
-
-    const frames = [];
-    const totalFrames = 20;  // Mitu kaadrit üleminekuks (rohkem kaadreid, sujuvam üleminek)
-
-    // Laadime mõlemad pildid
-    const img1 = new Image();
-    const img2 = new Image();
-    img1.src = images[0];
-    img2.src = images[1];
-
-    await Promise.all([new Promise(resolve => img1.onload = resolve), new Promise(resolve => img2.onload = resolve)]);
-
-    // Loome vahekaadrid fade üleminekuks
-    for (let i = 0; i <= totalFrames; i++) {
-        const canvas = document.createElement('canvas');
-        canvas.width = img1.width;
-        canvas.height = img1.height;
-        const ctx = canvas.getContext('2d');
-
-        // Järk-järguline läbipaistvus pildil 1
-        ctx.globalAlpha = 1 - i / totalFrames;
-        ctx.drawImage(img1, 0, 0);
-
-        // Järk-järguline ilmumine pildil 2
-        ctx.globalAlpha = i / totalFrames;
-        ctx.drawImage(img2, 0, 0);
-
-        frames.push(canvas);
+        const workerScript = await loadWorkerScript();
+        const gif = new GIF({
+            workers: 2,
+            workerScript,
+            quality: 10
+        });
+    
+        const frames = [];
+        const totalFrames = 20;  // Kaadrite arv ühe suuna üleminekuks
+    
+        // Laadime mõlemad pildid
+        const img1 = new Image();
+        const img2 = new Image();
+        img1.src = images[0];
+        img2.src = images[1];
+    
+        await Promise.all([new Promise(resolve => img1.onload = resolve), new Promise(resolve => img2.onload = resolve)]);
+    
+        // Loome vahekaadrid fade üleminekuks pilt 1 -> pilt 2
+        for (let i = 0; i <= totalFrames; i++) {
+            const canvas = document.createElement('canvas');
+            canvas.width = img1.width;
+            canvas.height = img1.height;
+            const ctx = canvas.getContext('2d');
+    
+            // Järk-järguline fade pilt 1-st pilt 2-le
+            ctx.globalAlpha = 1 - i / totalFrames;
+            ctx.drawImage(img1, 0, 0);
+    
+            ctx.globalAlpha = i / totalFrames;
+            ctx.drawImage(img2, 0, 0);
+    
+            frames.push(canvas);
+        }
+    
+        // Loome vahekaadrid fade üleminekuks pilt 2 -> pilt 1 (tagasi)
+        for (let i = 0; i <= totalFrames; i++) {
+            const canvas = document.createElement('canvas');
+            canvas.width = img1.width;
+            canvas.height = img1.height;
+            const ctx = canvas.getContext('2d');
+    
+            // Järk-järguline fade pilt 2-st tagasi pilt 1-le
+            ctx.globalAlpha = 1 - i / totalFrames;
+            ctx.drawImage(img2, 0, 0);
+    
+            ctx.globalAlpha = i / totalFrames;
+            ctx.drawImage(img1, 0, 0);
+    
+            frames.push(canvas);
+        }
+    
+        // Lisame kõik loodud kaadrid GIF-i
+        frames.forEach((frame) => {
+            gif.addFrame(frame, { delay: (duration * 1000) / (totalFrames * 2) });
+        });
+    
+        // Tagastame valmis GIF-i
+        return new Promise((resolve, reject) => {
+            gif.on('finished', resolve);
+            gif.render();
+        });
     }
-
-    // Lisame vahekaadritele kaadri GIFi
-    frames.forEach((frame) => {
-        gif.addFrame(frame, { delay: (duration * 1000) / totalFrames });
-    });
-
-    // Tagastame valmis GIFi
-    return new Promise((resolve, reject) => {
-        gif.on('finished', resolve);
-        gif.render();
-    });
-}
 
 
         async function loadWorkerScript() {
