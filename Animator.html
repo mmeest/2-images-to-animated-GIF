@@ -77,6 +77,18 @@
         #output img {
             width: 100%;
         }
+        #save-gif-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #save-gif-btn:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -89,18 +101,20 @@
     </div>
 
     <div class="controls">
-        <label for="seconds">Sekundid animatsiooniks:</label>
+        <label for="seconds">Duration in seconds:</label>
         <input type="number" id="seconds" value="2" min="1">
-        <button id="convert-btn">Konversioon</button>
+        <button id="convert-btn">Conversion</button>
     </div>
 
-    <div id="output">Siia ilmub sinu GIF</div>
+    <div id="output">Your GIF appear here</div>
+    <button id="save-gif-btn" style="display:none;">Save GIF</button>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         const dropZones = document.querySelectorAll('.drop-zone');
         let image1 = null;
         let image2 = null;
+        let generatedGifUrl = null;  // Defineerime muutuja, et salvestada GIF URL
 
         // Drag & Drop Events
         dropZones.forEach((zone, index) => {
@@ -134,8 +148,11 @@
                     const output = document.getElementById('output');
                     output.innerHTML = '';
                     const img = document.createElement('img');
-                    img.src = URL.createObjectURL(gifBlob);
+                    generatedGifUrl = URL.createObjectURL(gifBlob);  // Salvestame URL-i globaalsesse muutujasse
+                    img.src = generatedGifUrl;
                     output.appendChild(img);
+                    
+                    document.getElementById('save-gif-btn').style.display = 'inline-block';
                 } catch (error) {
                     console.error("Error generating GIF:", error);
                 }
@@ -144,71 +161,68 @@
             }
         });
 
-        async function generateGif(images, duration) {
-        const workerScript = await loadWorkerScript();
-        const gif = new GIF({
-            workers: 2,
-            workerScript,
-            quality: 10
+        document.getElementById('save-gif-btn').addEventListener('click', function () {
+            const a = document.createElement('a');
+            a.href = generatedGifUrl;
+            a.download = 'animated.gif';
+            a.click();
         });
-    
-        const frames = [];
-        const totalFrames = 20;  // Kaadrite arv ühe suuna üleminekuks
-    
-        // Laadime mõlemad pildid
-        const img1 = new Image();
-        const img2 = new Image();
-        img1.src = images[0];
-        img2.src = images[1];
-    
-        await Promise.all([new Promise(resolve => img1.onload = resolve), new Promise(resolve => img2.onload = resolve)]);
-    
-        // Loome vahekaadrid fade üleminekuks pilt 1 -> pilt 2
-        for (let i = 0; i <= totalFrames; i++) {
-            const canvas = document.createElement('canvas');
-            canvas.width = img1.width;
-            canvas.height = img1.height;
-            const ctx = canvas.getContext('2d');
-    
-            // Järk-järguline fade pilt 1-st pilt 2-le
-            ctx.globalAlpha = 1 - i / totalFrames;
-            ctx.drawImage(img1, 0, 0);
-    
-            ctx.globalAlpha = i / totalFrames;
-            ctx.drawImage(img2, 0, 0);
-    
-            frames.push(canvas);
-        }
-    
-        // Loome vahekaadrid fade üleminekuks pilt 2 -> pilt 1 (tagasi)
-        for (let i = 0; i <= totalFrames; i++) {
-            const canvas = document.createElement('canvas');
-            canvas.width = img1.width;
-            canvas.height = img1.height;
-            const ctx = canvas.getContext('2d');
-    
-            // Järk-järguline fade pilt 2-st tagasi pilt 1-le
-            ctx.globalAlpha = 1 - i / totalFrames;
-            ctx.drawImage(img2, 0, 0);
-    
-            ctx.globalAlpha = i / totalFrames;
-            ctx.drawImage(img1, 0, 0);
-    
-            frames.push(canvas);
-        }
-    
-        // Lisame kõik loodud kaadrid GIF-i
-        frames.forEach((frame) => {
-            gif.addFrame(frame, { delay: (duration * 1000) / (totalFrames * 2) });
-        });
-    
-        // Tagastame valmis GIF-i
-        return new Promise((resolve, reject) => {
-            gif.on('finished', resolve);
-            gif.render();
-        });
-    }
 
+        async function generateGif(images, duration) {
+            const workerScript = await loadWorkerScript();
+            const gif = new GIF({
+                workers: 2,
+                workerScript,
+                quality: 10
+            });
+
+            const frames = [];
+            const totalFrames = 20;  // Kaadrite arv ühe suuna üleminekuks
+
+            const img1 = new Image();
+            const img2 = new Image();
+            img1.src = images[0];
+            img2.src = images[1];
+
+            await Promise.all([new Promise(resolve => img1.onload = resolve), new Promise(resolve => img2.onload = resolve)]);
+
+            for (let i = 0; i <= totalFrames; i++) {
+                const canvas = document.createElement('canvas');
+                canvas.width = img1.width;
+                canvas.height = img1.height;
+                const ctx = canvas.getContext('2d');
+
+                ctx.globalAlpha = 1 - i / totalFrames;
+                ctx.drawImage(img1, 0, 0);
+                ctx.globalAlpha = i / totalFrames;
+                ctx.drawImage(img2, 0, 0);
+
+                frames.push(canvas);
+            }
+
+            for (let i = 0; i <= totalFrames; i++) {
+                const canvas = document.createElement('canvas');
+                canvas.width = img1.width;
+                canvas.height = img1.height;
+                const ctx = canvas.getContext('2d');
+
+                ctx.globalAlpha = 1 - i / totalFrames;
+                ctx.drawImage(img2, 0, 0);
+                ctx.globalAlpha = i / totalFrames;
+                ctx.drawImage(img1, 0, 0);
+
+                frames.push(canvas);
+            }
+
+            frames.forEach((frame) => {
+                gif.addFrame(frame, { delay: (duration * 1000) / (totalFrames * 2) });
+            });
+
+            return new Promise((resolve, reject) => {
+                gif.on('finished', resolve);
+                gif.render();
+            });
+        }
 
         async function loadWorkerScript() {
             const { data } = await axios.get('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js', {
