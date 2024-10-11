@@ -1,3 +1,9 @@
+<div>
+  <p align="center">
+    <img src="https://github.com/mmeest/2-images-to-animated-GIF/blob/main/a.gif" width="420px">
+  </p>
+</div>
+
 # 2-images-to-animated-GIF
 Webpage for converting 2 images into animated GIF
 
