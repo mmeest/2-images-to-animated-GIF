@@ -114,7 +114,7 @@
         const dropZones = document.querySelectorAll('.drop-zone');
         let image1 = null;
         let image2 = null;
-        let generatedGifUrl = null;  // Defineerime muutuja, et salvestada GIF URL
+        let generatedGifUrl = null;  // Define variable, to store GIF URL
 
         // Drag & Drop Events
         dropZones.forEach((zone, index) => {
@@ -148,7 +148,7 @@
                     const output = document.getElementById('output');
                     output.innerHTML = '';
                     const img = document.createElement('img');
-                    generatedGifUrl = URL.createObjectURL(gifBlob);  // Salvestame URL-i globaalsesse muutujasse
+                    generatedGifUrl = URL.createObjectURL(gifBlob);  // We'll store URL to global variable
                     img.src = generatedGifUrl;
                     output.appendChild(img);
                     
@@ -177,7 +177,7 @@
             });
 
             const frames = [];
-            const totalFrames = 20;  // Kaadrite arv ühe suuna üleminekuks
+            const totalFrames = 20;  // Number of frames for transition
 
             const img1 = new Image();
             const img2 = new Image();
