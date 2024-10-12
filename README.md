@@ -7,12 +7,16 @@
 # 2-images-to-animated-GIF
 Webpage for converting 2 images into animated GIF
 
+Drag and drop fields: Two 120x120 pixel size fields for input images.
+
+Time input field(in seconds) to set transition time.
+
+Conversion button for creating animated GIF
+
+Created image will be displayed in small preview field.
+
+'Save GIF' button for downloading your GIF file in original size.
+
 Drag and drop väljad: Kaks 120x120 piksli suurust ala, kuhu saad pildid lohistada.
 
-Sekundite sisestusväli: Välja kaudu määrad animatsiooni kestvuse ühelt pildilt teisele üleminekuks.
-
-Konversiooninupp: Kui klõpsad nupule, kasutatakse sisestatud pilte ja määratud sekundite arvu, et genereerida animeeritud GIF, mis vaheldub kahe pildi vahel.
-
-GIF.js: GIF-i loomiseks kasutatakse välist GIF.js teeki, mis lisab vajalikud kaadrid ja koostab GIF-faili.
-
-'Save GIF' nupp laeb genereeritud gif faili alla.
+For the best result two input images should be same size.
