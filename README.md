@@ -11,7 +11,9 @@ Drag and drop fields: Two 120x120 pixel size fields for input images.
 
 Time input field(in seconds) to set transition time.
 
-Conversion button for creating animated GIF
+Conversion button for creating animated GIF.
+
+Conversion will take few moments.
 
 Created image will be displayed in small preview field.
 
